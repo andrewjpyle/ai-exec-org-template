@@ -1,9 +1,12 @@
 {
-  "north_star": 12500,
+  "_comment": "Sample numbers for the fictional Acme Widgets. Replace with readers wired to your real systems.",
+  "weekly_active_customers": 1840,
   "cash_runway_days": 140,
-  "revenue_per_day": null,
-  "weekly_organic_clicks": 3200,
+  "revenue_per_day": 2350,
+  "weekly_qualified_leads": 42,
   "products_flagged_for_review": 4,
-  "failed_deploys_7d": 1,
+  "uptime_pct_7d": 99.82,
+  "change_failure_rate_pct": 18.2,
+  "open_critical_findings": 1,
   "stale_agent_sessions": 2
 }

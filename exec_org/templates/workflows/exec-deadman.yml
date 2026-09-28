@@ -1,0 +1,38 @@
+# The dead-man for the exec brief. It runs on its OWN schedule, as its OWN job, and alerts on
+# its OWN channel (an `exec-alert` issue, or a Slack webhook). If the brief job stops, this still
+# runs and tells you. An alarm must never share a queue with the thing it watches.
+#
+# Fires when: seats are armed but no `exec-brief` issue appeared in 26h, or seats are still
+# unarmed after the date in the EXEC_ARM_BY variable (optional, YYYY-MM-DD).
+
+name: exec-deadman
+
+on:
+  schedule:
+    - cron: "10 16 * * *"   # ~2.5h after the brief; late enough to catch a missed run
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  deadman:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install exec-org
+        run: pip install "git+https://github.com/andrewjpyle/ai-exec-org-template@v0.2.0"
+      - name: Check the brief landed
+        env:
+          EXEC_ARMED: ${{ vars.EXEC_ARMED }}
+          EXEC_ARM_BY: ${{ vars.EXEC_ARM_BY }}
+          EXEC_SINK: github
+          EXEC_ALERT_GITHUB_REPO: ${{ github.repository }}
+          EXEC_ALERT_WEBHOOK: ${{ secrets.EXEC_ALERT_WEBHOOK }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: exec-org deadman

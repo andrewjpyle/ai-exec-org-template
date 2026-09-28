@@ -1,0 +1,46 @@
+# The daily AI executive brief. Writes ONE draft, as a GitHub issue labeled `exec-brief`.
+# Nothing here can merge, deploy, send or spend: the job's token can only read and open issues.
+#
+# Arm seats one at a time with a repository VARIABLE (Settings > Secrets and variables > Actions):
+#   EXEC_ARMED = cfo            (later: cfo,cto,ciso)
+# Optional secrets, only for the readers you wire: STRIPE_API_KEY (restricted, read-only),
+# ANTHROPIC_API_KEY (+ variable EXEC_CLAUDE_NARRATE=1 for Claude's advisory read).
+
+name: exec-brief
+
+on:
+  schedule:
+    - cron: "30 13 * * *"   # 13:30 UTC daily. Pick a time you actually read it.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write        # the brief is an issue: a place a human reads
+  deployments: read    # for readers.github.change_failure_rate
+  actions: read        # for readers.github.ci_pass_rate
+
+concurrency:
+  group: exec-brief
+  cancel-in-progress: false
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install exec-org
+        run: pip install "ai-exec-org-template[claude] @ git+https://github.com/andrewjpyle/ai-exec-org-template@v0.2.0"
+      - name: Compose and file today's draft
+        env:
+          EXEC_ARMED: ${{ vars.EXEC_ARMED }}
+          EXEC_SINK: github
+          EXEC_METRICS_FILE: metrics.json
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+          EXEC_CLAUDE_NARRATE: ${{ vars.EXEC_CLAUDE_NARRATE }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: exec-org brief

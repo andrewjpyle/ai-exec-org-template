@@ -1,39 +1,77 @@
 """The seat registry: every AI executive declared in code, in one place.
 
-A seat is not a job description. It is one owned outcome, one number that
-measures it, and a read-only snapshot of where that number stands today.
+A seat is not a job description. It is one owned outcome, one number that measures
+it, a read-only snapshot of where that number stands today, and (optionally) the
+threshold at which that number becomes the thing to fix first.
 
 Rules baked in:
-  * The roster lives in code (roles.py), not a database, so it is reviewed,
-    versioned and never silently changed by a data migration.
-  * Every seat ships DORMANT. It is armed on its own, with its own env flag,
-    so one seat can prove itself before the next one is trusted.
-  * A snapshot never raises and never invents a value. If it cannot read the
-    number it says so ("unavailable") instead of guessing.
+  * The roster lives in code, not a database, so it is reviewed, versioned and never
+    silently changed by a data migration.
+  * Every seat ships DORMANT. It is armed on its own, with its own env flag, so one
+    seat can prove itself before the next one is trusted.
+  * A snapshot never raises and never invents a value. If it cannot read the number
+    it says so ("unavailable") instead of guessing.
 """
 
 from __future__ import annotations
 
 import logging
+import operator
 import os
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
 _TRUTHY = {"1", "true", "yes", "on"}
+_OPS = {">=": operator.ge, "<=": operator.le, ">": operator.gt, "<": operator.lt}
+
+
+@dataclass(frozen=True)
+class Threshold:
+    """When the seat's number crosses this line, the seat's `fix` becomes its fix-first.
+
+    `Threshold(">=", 15)` on a change-failure rate means "15% or worse is a problem".
+    """
+
+    op: str
+    value: float
+
+    def __post_init__(self):
+        if self.op not in _OPS:
+            raise ValueError(f"threshold op must be one of {sorted(_OPS)}, got {self.op!r}")
+
+    def crossed(self, number) -> bool:
+        try:
+            return _OPS[self.op](float(number), float(self.value))
+        except (TypeError, ValueError):
+            return False
+
+    def __str__(self) -> str:
+        v = int(self.value) if float(self.value).is_integer() else self.value
+        return f"{self.op} {v}"
 
 
 @dataclass
 class Seat:
     """One AI executive seat."""
 
-    role_id: str                 # short slug, e.g. "cfo"
-    title: str                   # display title, e.g. "AI CFO"
-    owned_outcome: str           # the ONE outcome this seat owns
-    number: str                  # the ONE number that measures it
-    reads: List[str] = field(default_factory=list)  # existing systems it reads
-    snapshot: Optional[Callable[[], dict]] = None    # read-only, returns a dict
+    role_id: str                  # short slug, e.g. "cfo"
+    title: str                    # display title, e.g. "AI CFO"
+    owned_outcome: str            # the ONE outcome this seat owns
+    number: str                   # the ONE number that measures it (a key in the snapshot)
+    snapshot: Callable[[], dict] | None = None   # read-only, returns a dict
+    unit: str = ""                # printed after the number, e.g. "%", " days", " USD/day"
+    better: str = "up"            # "up" or "down": which direction is good (drives delta arrows)
+    alarm: Threshold | None = None   # when crossed, `fix` becomes this seat's fix-first
+    fix: str = ""                 # the one action to take when the alarm fires
+    reads: list[str] = field(default_factory=list)  # existing systems it reads (docs only)
+
+    def __post_init__(self):
+        if self.better not in ("up", "down"):
+            raise ValueError(f"seat {self.role_id!r}: better must be 'up' or 'down'")
+        if self.alarm is not None and not self.fix:
+            raise ValueError(f"seat {self.role_id!r}: an alarm needs a `fix` action")
 
     @property
     def arm_flag(self) -> str:
@@ -41,9 +79,9 @@ class Seat:
 
 
 class Registry:
-    """In-memory registry of seats, populated by roles.py at import time."""
+    """In-memory registry of seats, populated by a roles module at import time."""
 
-    _seats: Dict[str, Seat] = {}
+    _seats: dict[str, Seat] = {}
 
     @classmethod
     def register(cls, seat: Seat) -> Seat:
@@ -55,11 +93,11 @@ class Registry:
         return seat
 
     @classmethod
-    def get(cls, role_id: str) -> Optional[Seat]:
+    def get(cls, role_id: str) -> Seat | None:
         return cls._seats.get(role_id)
 
     @classmethod
-    def all(cls) -> List[Seat]:
+    def all(cls) -> list[Seat]:
         return list(cls._seats.values())
 
     @classmethod
@@ -67,13 +105,18 @@ class Registry:
         cls._seats.clear()
 
 
-def is_armed(seat: Seat, env: Optional[dict] = None) -> bool:
-    """A seat is armed only when its own env flag is truthy."""
+def is_armed(seat: Seat, env: dict | None = None) -> bool:
+    """A seat is armed only when ITS OWN switch is on: `EXEC_<ROLE>_ENABLED=1`, or its role id
+    listed in `EXEC_ARMED` (a comma list, handy in CI: `EXEC_ARMED=cfo,cto`). Nothing arms
+    every seat at once; you name each one."""
     env = os.environ if env is None else env
-    return env.get(seat.arm_flag, "").strip().lower() in _TRUTHY
+    if env.get(seat.arm_flag, "").strip().lower() in _TRUTHY:
+        return True
+    listed = {r.strip().lower() for r in env.get("EXEC_ARMED", "").split(",") if r.strip()}
+    return seat.role_id in listed
 
 
-def armed_seats(env: Optional[dict] = None) -> List[Seat]:
+def armed_seats(env: dict | None = None) -> list[Seat]:
     return [s for s in Registry.all() if is_armed(s, env)]
 
 
@@ -82,7 +125,27 @@ def safe_snapshot(seat: Seat) -> dict:
     if seat.snapshot is None:
         return {"unavailable": "no snapshot wired yet"}
     try:
-        return seat.snapshot() or {"unavailable": "snapshot returned nothing"}
+        snap = seat.snapshot()
     except Exception as exc:  # a broken reader must not take the brief down
         logger.warning("snapshot for %s failed: %s", seat.role_id, exc)
-        return {"unavailable": f"snapshot error: {type(exc).__name__}"}
+        return {"unavailable": f"snapshot error: {type(exc).__name__}: {str(exc)[:120]}"}
+    if not snap:
+        return {"unavailable": "snapshot returned nothing"}
+    if "unavailable" not in snap and snap.get(seat.number) is None:
+        return {"unavailable": f"{seat.number} not reported", **snap}
+    return snap
+
+
+def headline(seat: Seat, snap: dict):
+    """The seat's number from its snapshot, or None when unreadable."""
+    if "unavailable" in snap:
+        return None
+    return snap.get(seat.number)
+
+
+def fix_first(seat: Seat, snap: dict) -> str | None:
+    """The seat's one action when its alarm fires on a readable number, else None."""
+    value = headline(seat, snap)
+    if seat.alarm is None or value is None or not seat.alarm.crossed(value):
+        return None
+    return f"{seat.fix} ({seat.number} = {value}{seat.unit}, alarm {seat.alarm}{seat.unit})"
