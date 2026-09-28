@@ -1,0 +1,9 @@
+{
+  "north_star": 12500,
+  "cash_runway_days": 140,
+  "revenue_per_day": null,
+  "weekly_organic_clicks": 3200,
+  "products_flagged_for_review": 4,
+  "failed_deploys_7d": 1,
+  "stale_agent_sessions": 2
+}

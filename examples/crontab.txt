@@ -1,0 +1,8 @@
+# The brief and the dead-man run as SEPARATE jobs on SEPARATE schedules.
+# If the brief job dies, the dead-man job still runs and tells you.
+
+# 1:30 PM every day: write the draft brief
+30 13 * * *  cd /path/to/ai_exec_org_template && EXEC_METRICS_FILE=metrics.json python -m exec_org brief
+
+# 4:10 PM every day: check that a brief actually landed (and nudge about unarmed seats)
+10 16 * * *  cd /path/to/ai_exec_org_template && EXEC_ALERT_WEBHOOK=https://hooks.example.com/your-channel python -m exec_org deadman

@@ -1,0 +1,13 @@
+[project]
+name = "ai-exec-org-template"
+version = "0.1.0"
+description = "An AI executive team that cannot act: seats declared in code, one daily engine, drafts only, two dead-man alarms."
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
