@@ -1,8 +1,8 @@
-# The brief and the dead-man run as SEPARATE jobs on SEPARATE schedules.
-# If the brief job dies, the dead-man job still runs and tells you.
+# Not on GitHub Actions? Any scheduler works. Keep the brief and the dead-man as SEPARATE jobs,
+# on SEPARATE schedules, so a dead brief job cannot take its own alarm down with it.
 
-# 1:30 PM every day: write the draft brief
-30 13 * * *  cd /path/to/ai_exec_org_template && EXEC_METRICS_FILE=metrics.json python -m exec_org brief
+# 13:30 every day: write the draft brief (arm seats one at a time)
+30 13 * * *  cd /srv/exec-org && EXEC_ARMED=cfo,cto exec-org brief
 
-# 4:10 PM every day: check that a brief actually landed (and nudge about unarmed seats)
-10 16 * * *  cd /path/to/ai_exec_org_template && EXEC_ALERT_WEBHOOK=https://hooks.example.com/your-channel python -m exec_org deadman
+# 16:10 every day: did a brief actually land? (also nudges about unarmed seats after EXEC_ARM_BY)
+10 16 * * *  cd /srv/exec-org && EXEC_ARMED=cfo,cto EXEC_ALERT_WEBHOOK=https://hooks.example.com/your-channel exec-org deadman

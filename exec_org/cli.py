@@ -71,7 +71,7 @@ def cmd_init(args) -> int:
         print(f"  wrote   {p}")
     for p in skipped:
         print(f"  kept    {p} (exists; use --force to overwrite)")
-    print("\nNext: python -m exec_org seats, then EXEC_ARMED=cfo exec-org brief --dry-run")
+    print("\nNext: exec-org seats, then EXEC_ARMED=cfo exec-org brief --dry-run")
     return 0
 
 

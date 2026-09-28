@@ -1,0 +1,36 @@
+# This repo eats its own cooking: a weekly brief filed as an issue (label: exec-brief).
+# The AI CTO seat reads this repo's REAL CI pass rate. The other seats read labeled sample data.
+
+name: demo-brief
+
+on:
+  schedule:
+    - cron: "30 14 * * 1"   # Mondays 14:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  actions: read
+
+concurrency:
+  group: demo-brief
+  cancel-in-progress: false
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - name: File this week's draft brief
+        env:
+          EXEC_ROLES: .github/demo/demo_roles.py
+          EXEC_ARMED: ceo,cfo,cto,ciso
+          EXEC_SINK: github
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: exec-org brief

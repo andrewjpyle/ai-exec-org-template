@@ -1,0 +1,32 @@
+# The demo's dead-man: its own schedule, its own job, its own channel (an exec-alert issue).
+# The demo brief is weekly, so this checks on Mondays after the brief should have landed.
+
+name: demo-deadman
+
+on:
+  schedule:
+    - cron: "10 17 * * 1"   # Mondays 17:10 UTC, ~2.5h after the brief
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  deadman:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - name: Did this week's brief land?
+        env:
+          EXEC_ROLES: .github/demo/demo_roles.py
+          EXEC_ARMED: ceo,cfo,cto,ciso
+          EXEC_SINK: github
+          EXEC_ALERT_GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: exec-org deadman
