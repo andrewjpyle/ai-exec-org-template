@@ -225,6 +225,9 @@ JSON API. If a number has no source yet, `no_feed` says so honestly.
 
 ## Roadmap
 
+- **v0.3: read-only investigators.** When a seat's number moves, Claude gets the seat's readers as
+  read-only tools, decides what to look at, and ends with one proposed fix for a human to approve.
+  Agency to look, not to touch. This is the step from a disciplined workflow to an agent.
 - More readers: Google Search Console, Plausible, Linear, PagerDuty
 - A weekly roll-up brief with week-over-week trends
 - Per-seat history charts from the metrics markers
