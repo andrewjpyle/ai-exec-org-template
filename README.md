@@ -15,7 +15,7 @@
 Most "AI agents for your business" pitches end with the agent doing things: sending the email,
 moving the money, merging the PR. This is the other half, the half that makes the first half
 safe: **AI executives that read your real numbers every day, tell you the one thing to fix first,
-and cannot do anything else.**
+and cannot do anything else, yet.** It is the foundation you build before you let agents decide.
 
 - **Nine seats** (CEO, CFO, CRO, CMO, CPO, COO, CTO, CISO, Chief of Staff). Each owns **one outcome
   and one number**, with an alarm and one concrete fix.
@@ -127,19 +127,38 @@ flowchart LR
 
 <p align="center"><img src="docs/assets/timeline.png" alt="A day in the life of the brief" width="100%"></p>
 
-## Why "cannot act"
+## Why the foundation comes first
+
+The goal is agents that make real decisions. This repo is the part you build **before** that, and
+the part most teams skip. An agent you let decide is only as trustworthy as what it stands on:
+
+- numbers it can actually read, and an honest "unavailable" when it can't
+- one clear job and one number per seat, so you can tell whether it is doing that job
+- a watchdog that notices when it goes quiet
+- a track record you have watched before you hand it anything that matters
+
+Skip those and the first autonomous mistake is also the first time you find out something was wrong.
 
 I run a portfolio of 100+ live sites with one operator and a fleet of Claude Code agents, and this
 is a trimmed-down, dependency-free version of the executive layer I run on it. The rule there is
 the rule here: **agents propose, a human decides.** Every production action goes through a person.
 
 That rule was learned, not assumed. An autonomous trading bot I built lost real money before I
-switched it off. The briefs are allowed to be wrong, because a person reads them. An actuator is not
-allowed to be wrong.
+switched it off. That is why everything in this repo exists.
 
-The dead-man is in here for the same reason. On 2026-09-27 my own daily brief did not land. Nothing
+The dead-man is here for the same reason. On 2026-09-27 my own daily brief did not land. Nothing
 crashed loudly; it simply was not there. The stall dead-man, which only watches the engine, caught
 it that afternoon.
+
+**The path from here to autonomy: look, then propose, then act.**
+
+| Stage | What a seat can do | What it needs first |
+|---|---|---|
+| **Look** (this release) | read its number, flag the one thing to fix | readers, one number, a watchdog |
+| **Propose** (v0.3) | investigate with read-only tools, propose one fix for a human to approve | a readable history of briefs |
+| **Act** | carry out small, reversible fixes on its own, with a kill switch and a rollback | a track record of proposals that held up |
+
+Fork this and take your seats all the way to act. Just build the foundation first.
 
 ## Know which seats you need: the interview
 
@@ -148,6 +167,7 @@ exec-org interview                         # 8 questions
 exec-org interview --from company.md       # or read a description of your company
 exec-org interview --write                 # save exec_roles.py + metrics.json
 exec-org interview --from company.md --claude   # optional: Claude polishes the wording
+exec-org interview --from company.md --reply    # just your first 3 seats, as a message
 ```
 
 Your answers pick seats from a catalog of 12, with variants for SaaS, agencies, e-commerce,

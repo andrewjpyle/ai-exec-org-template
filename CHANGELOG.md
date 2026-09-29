@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 (2026-09-29)
+- `exec-org interview --reply`: your first three seats (North Star, money, and the seat most specific to your business type) as a ready-to-send message.
+- The interview infers what a business type implies (a SaaS ships code, holds customer data and bills recurring; a shop takes payments).
+- Business-specific seat variants for agency and services CEOs and the e-commerce CRO.
+- README: why the foundation comes first, and the look, propose, act path to autonomy.
+
 ## 0.2.0 (2026-09-28)
 - **Nine seats**: adds AI CTO (change-failure rate) and AI CISO (open critical findings).
 - **Alarms and fix-first**: `Threshold` on each seat, with one concrete fix when it fires.

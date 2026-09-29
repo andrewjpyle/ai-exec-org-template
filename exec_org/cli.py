@@ -84,6 +84,9 @@ def cmd_interview(args) -> int:
     else:
         text = ""
         answers = iv.ask()
+    if args.reply:
+        print(iv.reply(answers, iv.first_three(answers)))
+        return 0
     seats = iv.roster(answers)
     if args.claude:
         seats = iv.polish_with_claude(seats, text or repr(answers))
@@ -135,6 +138,7 @@ def main(argv: list[str] | None = None) -> int:
     sp.add_argument("--from", dest="from_file", help="read a company description instead of asking")
     sp.add_argument("--claude", action="store_true", help="let Claude polish outcome and fix wording")
     sp.add_argument("--write", action="store_true", help="write exec_roles.py and metrics.json")
+    sp.add_argument("--reply", action="store_true", help="print a ready-to-send message with the first 3 seats")
     sp.add_argument("--force", action="store_true", help="overwrite existing files")
     sp.set_defaults(fn=cmd_interview)
 

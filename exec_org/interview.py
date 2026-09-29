@@ -38,7 +38,7 @@ _KEYWORDS = {
     "customer_data": r"\b(customer data|pii|payments?|logins?|accounts?|gdpr|hipaa)\b",
     "agents": r"\b(agents?|automations?|workflows?|bots?|claude|llm)\b",
     "recurring": r"\b(subscriptions?|recurring|retainers?|mrr|arr|churn)\b",
-    "team": r"\b(team|employees|hire|hiring|staff|contractors)\b",
+    "team": r"\b(team|employees|hire|hiring|staff|contractors|\d+\s+(people|person|employees|staff))\b",
     "data_feeds": r"\b(sync|export|etl|pipeline|warehouse|dashboard)s?\b",
 }
 
@@ -74,9 +74,41 @@ def from_text(text: str) -> Answers:
     low = text.lower()
     business = next((b for b, pat in _KEYWORDS["business"] if re.search(pat, low)), "saas")
     m = re.search(r"north star[^\n:]*[:\-]\s*(.+)", text, re.IGNORECASE)
-    return Answers(business=business, north_star=(m.group(1).strip() if m else ""),
-                   **{k: bool(re.search(_KEYWORDS[k], low))
-                      for k in ("ships_code", "customer_data", "agents", "recurring", "team", "data_feeds")})
+    found = {k: bool(re.search(_KEYWORDS[k], low))
+             for k in ("ships_code", "customer_data", "agents", "recurring", "team", "data_feeds")}
+    # What the business type implies even when the text doesn't say it.
+    if business == "saas":
+        found.update(ships_code=True, customer_data=True, recurring=True)
+    elif business == "ecommerce":
+        found.update(customer_data=True)
+    return Answers(business=business, north_star=(m.group(1).strip() if m else ""), **found)
+
+
+# The third seat: the one most specific to how this kind of business breaks.
+_THIRD = {"saas": ("cto", "ciso"), "ecommerce": ("ciso", "coo"), "agency": ("cco", "coo"),
+          "content": ("cmo",), "services": ("coo",)}
+
+
+def first_three(a: Answers) -> list[SeatTemplate]:
+    """North Star, the money seat, and the seat most specific to this business type."""
+    seats = {s.role_id: s for s in roster(a)}
+    third = next((r for r in _THIRD.get(a.business, ("coo",)) if r in seats), "coo")
+    return [seats["ceo"], seats["cro"], seats[third]]
+
+
+def reply(a: Answers, seats: list[SeatTemplate],
+          repo: str = "https://github.com/andrewjpyle/ai-exec-org-template") -> str:
+    """A ready-to-send message: three seats, each with one number and an alarm."""
+    lines = [f"Your first three AI seats ({a.business}):", ""]
+    for i, s in enumerate(seats, 1):
+        alarm = f"alarm {s.alarm[0]} {s.alarm[1]:g}{s.unit}" if s.alarm else "alarm: set one after a week of readings"
+        lines.append(f"{i}. {s.title}: {s.owned_outcome}")
+        lines.append(f"   number: {s.number} ({alarm})")
+        lines.append(f"   fix when it fires: {s.fix}")
+    lines += ["", "Each seat reads one number and writes one line in a daily draft brief. Nothing acts on its own.",
+              "Switch them on one at a time, and read a week of briefs before adding the next.", "",
+              f"Free template: {repo}", "(pip install it, run exec-org init, and these three seats go in exec_roles.py)"]
+    return "\n".join(lines)
 
 
 def roster(a: Answers) -> list[SeatTemplate]:

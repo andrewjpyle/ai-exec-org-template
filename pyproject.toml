@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-exec-org-template"
-version = "0.2.0"
+version = "0.2.1"
 description = "An AI executive team that cannot act: seats declared in code, one daily engine, drafts only, two dead-man alarms."
 readme = "README.md"
 requires-python = ">=3.10"

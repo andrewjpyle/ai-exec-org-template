@@ -74,3 +74,28 @@ def test_cli_end_to_end_init_then_dry_run_brief(tmp_path, monkeypatch, capsys):
     assert main(["brief"]) == 0
     assert list(Path("briefs").glob("brief_*.md"))
     assert main(["deadman"]) == 0             # a brief just landed: quiet
+
+
+def test_business_type_implies_what_the_text_leaves_out():
+    saas = iv.from_text("SEAT we run a SaaS scheduling app for dental offices")
+    assert saas.ships_code and saas.customer_data and saas.recurring
+    shop = iv.from_text("SEAT ecommerce shop selling coffee gear")
+    assert shop.customer_data
+    assert iv.from_text("small agency, 8 people").team
+
+
+def test_first_three_is_north_star_money_and_the_business_specific_seat():
+    assert [s.role_id for s in iv.first_three(iv.from_text("SaaS app"))] == ["ceo", "cro", "cto"]
+    assert [s.role_id for s in iv.first_three(iv.from_text("ecommerce shop"))] == ["ceo", "cro", "ciso"]
+    assert [s.role_id for s in iv.first_three(iv.from_text("marketing agency with retainers"))] == ["ceo", "cro", "cco"]
+    assert [s.role_id for s in iv.first_three(iv.from_text("content sites"))] == ["ceo", "cro", "cmo"]
+
+
+def test_reply_is_ready_to_send_and_never_generic(capsys, tmp_path):
+    (tmp_path / "c.txt").write_text("SEAT small marketing agency, 8 people, retainers")
+    assert main(["interview", "--from", str(tmp_path / "c.txt"), "--reply"]) == 0
+    out = capsys.readouterr().out
+    assert out.startswith("Your first three AI seats (agency):")
+    assert "The North Star metric" not in out and "active_clients" in out
+    assert "github.com/andrewjpyle/ai-exec-org-template" in out and "Nothing acts on its own" in out
+    assert "—" not in out
