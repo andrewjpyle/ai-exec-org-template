@@ -35,7 +35,7 @@ and cannot do anything else, yet.** It is the foundation you build before you le
 ## 60 seconds to a first brief
 
 ```bash
-pip install "git+https://github.com/andrewjpyle/ai-exec-org-template@v0.2.0"
+pip install "git+https://github.com/andrewjpyle/ai-exec-org-template@v0.2.1"
 mkdir my-exec-org && cd my-exec-org
 exec-org init                                 # roster, sample numbers, workflows, CLAUDE.md
 exec-org seats                                # 9 seats, all dormant

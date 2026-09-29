@@ -33,7 +33,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install exec-org
-        run: pip install "ai-exec-org-template[claude] @ git+https://github.com/andrewjpyle/ai-exec-org-template@v0.2.0"
+        run: pip install "ai-exec-org-template[claude] @ git+https://github.com/andrewjpyle/ai-exec-org-template@v0.2.1"
       - name: Compose and file today's draft
         env:
           EXEC_ARMED: ${{ vars.EXEC_ARMED }}

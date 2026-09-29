@@ -26,7 +26,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install exec-org
-        run: pip install "git+https://github.com/andrewjpyle/ai-exec-org-template@v0.2.0"
+        run: pip install "git+https://github.com/andrewjpyle/ai-exec-org-template@v0.2.1"
       - name: Check the brief landed
         env:
           EXEC_ARMED: ${{ vars.EXEC_ARMED }}
