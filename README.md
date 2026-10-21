@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/hero.png" alt="An AI executive team that cannot act: nine seats, one engine, drafts only, two dead-man alarms" width="100%">
+  <img src="docs/assets/hero.webp" alt="An AI executive team that cannot act: nine seats, one engine, drafts only, two dead-man alarms" width="100%">
 </p>
 
 <p align="center">
@@ -61,7 +61,7 @@ _Owns: Engineering quality: ship healthy, tested, deployable code_
 From the second brief on, every number shows its change and whether that is better or worse.
 Full example with deltas: [`examples/briefs/acme_2026-09-28.md`](examples/briefs/acme_2026-09-28.md).
 
-<p align="center"><img src="docs/assets/anatomy.png" alt="Anatomy of a brief" width="100%"></p>
+<p align="center"><img src="docs/assets/anatomy.webp" alt="Anatomy of a brief" width="100%"></p>
 
 ## From your real data in 10 minutes
 
@@ -102,7 +102,7 @@ More: [`docs/CONNECTORS.md`](docs/CONNECTORS.md).
 
 ## How it works
 
-<p align="center"><img src="docs/assets/architecture.png" alt="Readers feed seats, one engine drafts one brief to a sink a human reads; a dead-man on its own schedule alerts on a separate channel" width="100%"></p>
+<p align="center"><img src="docs/assets/architecture.webp" alt="Readers feed seats, one engine drafts one brief to a sink a human reads; a dead-man on its own schedule alerts on a separate channel" width="100%"></p>
 
 ```mermaid
 flowchart LR
@@ -125,7 +125,7 @@ flowchart LR
 4. **Watch the watcher.** The dead-man runs as a separate job, on a separate schedule, and alerts on
    a separate channel. An alarm must never share a queue with the thing it watches.
 
-<p align="center"><img src="docs/assets/timeline.png" alt="A day in the life of the brief" width="100%"></p>
+<p align="center"><img src="docs/assets/timeline.webp" alt="A day in the life of the brief" width="100%"></p>
 
 ## Why the foundation comes first
 
@@ -174,7 +174,7 @@ Your answers pick seats from a catalog of 12, with variants for SaaS, agencies, 
 content portfolios and services. It is deterministic. With `--claude`, Claude may reword each
 seat's outcome and fix. It cannot add seats, numbers or alarms; anything else it returns is ignored.
 
-<p align="center"><img src="docs/assets/catalog.png" alt="The seat catalog: 12 seats, one outcome and one number each" width="100%"></p>
+<p align="center"><img src="docs/assets/catalog.webp" alt="The seat catalog: 12 seats, one outcome and one number each" width="100%"></p>
 
 ## Run it every day on GitHub Actions
 
